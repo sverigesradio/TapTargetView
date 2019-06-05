@@ -703,6 +703,15 @@ public class TapTargetView extends View {
     {
       c.translate(textBounds.left, textBounds.top);
       c.translate(outerCircleCenter[0] - getWidth() * 0.5f, 0);
+      int outsideLeft = outerCircleCenter[0] - Double.valueOf(outerCircleRadius * 0.5).intValue();
+      if (outsideLeft < 0 ) {
+        c.translate(Integer.valueOf(-outsideLeft + TEXT_PADDING / 2).floatValue(), 0);
+      }
+
+      int outsideRight = outerCircleCenter[0] + Double.valueOf(outerCircleRadius * 0.5).intValue();
+      if (outsideRight > getWidth()) {
+        c.translate(getWidth() - outsideRight - TEXT_PADDING / 2, 0);
+      }
       titlePaint.setAlpha(textAlpha);
       if (titleLayout != null) {
         titleLayout.draw(c);
