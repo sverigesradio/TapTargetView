@@ -39,20 +39,20 @@ class ViewTapTarget extends TapTarget {
       @Override
       public void run() {
         // Cache bounds
-          targetRadius(Double.valueOf(Math.ceil(Math.sqrt(Math.pow(view.getWidth() * 0.5, 2.0) + Math.pow(view.getHeight() * 0.5, 2.0)))).intValue());
+          //targetRadius(Double.valueOf(Math.ceil(Math.sqrt(Math.pow(view.getWidth() * 0.5, 2.0) + Math.pow(view.getHeight() * 0.5, 2.0)))).intValue());
 
           final int[] location = new int[2];
         view.getLocationOnScreen(location);
         bounds = new Rect(location[0], location[1],
             location[0] + view.getWidth(), location[1] + view.getHeight());
 
-        if (icon == null && view.getWidth() > 0 && view.getHeight() > 0) {
+        /*if (icon == null && view.getWidth() > 0 && view.getHeight() > 0) {
           final Bitmap viewBitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
           final Canvas canvas = new Canvas(viewBitmap);
           view.draw(canvas);
           icon = new BitmapDrawable(view.getContext().getResources(), viewBitmap);
           icon.setBounds(0, 0, icon.getIntrinsicWidth(), icon.getIntrinsicHeight());
-        }
+        }*/
 
         runnable.run();
       }

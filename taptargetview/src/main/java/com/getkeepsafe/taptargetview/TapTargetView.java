@@ -103,7 +103,7 @@ public class TapTargetView extends View {
   @Nullable
   StaticLayout descriptionLayout;
   boolean isDark;
-  boolean debug = true;
+  boolean debug;
   boolean shouldTintTarget;
   boolean shouldDrawShadow;
   boolean cancelable;
