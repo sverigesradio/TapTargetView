@@ -39,7 +39,9 @@ class ViewTapTarget extends TapTarget {
       @Override
       public void run() {
         // Cache bounds
-        final int[] location = new int[2];
+          targetRadius(Double.valueOf(Math.ceil(Math.sqrt(Math.pow(view.getWidth() * 0.5, 2.0) + Math.pow(view.getHeight() * 0.5, 2.0)))).intValue());
+
+          final int[] location = new int[2];
         view.getLocationOnScreen(location);
         bounds = new Rect(location[0], location[1],
             location[0] + view.getWidth(), location[1] + view.getHeight());
