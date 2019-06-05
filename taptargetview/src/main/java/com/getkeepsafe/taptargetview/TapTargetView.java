@@ -542,7 +542,11 @@ public class TapTargetView extends View {
   }
 
   private int getTargetRadius() {
-    return target.targetRadius;
+    // choose this for dinamic target radius
+//    return target.targetRadius;
+
+    // choose this if you want to set the radius
+    return UiUtil.dp(getContext(), target.targetRadius);
   }
 
   private void startExpandAnimation() {
