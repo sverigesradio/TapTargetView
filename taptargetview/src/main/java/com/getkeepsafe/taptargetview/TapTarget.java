@@ -392,7 +392,7 @@ public class TapTarget {
 
   /** Specify the icon that will be drawn in the center of the target bounds **/
   public TapTarget icon(Drawable icon) {
-    return icon(icon, false);
+    return icon(icon, false, true);
   }
 
   /**
@@ -402,9 +402,11 @@ public class TapTarget {
    *                     be applied: <br/>
    *                      <code>(0, 0, intrinsic-width, intrinsic-height)</code>
    */
-  public TapTarget icon(Drawable icon, boolean hasSetBounds) {
+  public TapTarget icon(Drawable icon, boolean hasSetBounds, boolean visible) {
     if (icon == null) throw new IllegalArgumentException("Cannot use null drawable");
     this.icon = icon;
+
+    icon.setVisible(visible, false);
 
     if (!hasSetBounds) {
       this.icon.setBounds(new Rect(0, 0, this.icon.getIntrinsicWidth(), this.icon.getIntrinsicHeight()));

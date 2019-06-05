@@ -72,7 +72,6 @@ public class TapTargetView extends View {
   private boolean isInteractable = true;
 
   final int TARGET_PADDING;
-  final int TARGET_RADIUS;
   final int TARGET_PULSE_RADIUS;
   final int TEXT_PADDING;
   final int TEXT_SPACING;
@@ -243,9 +242,9 @@ public class TapTargetView extends View {
       targetCircleAlpha = (int) Math.min(255.0f, (lerpTime * 1.5f * 255.0f));
 
       if (expanding) {
-        targetCircleRadius = TARGET_RADIUS * Math.min(1.0f, lerpTime * 1.5f);
+        targetCircleRadius = getTargetRadius() * Math.min(1.0f, lerpTime * 1.5f);
       } else {
-        targetCircleRadius = TARGET_RADIUS * lerpTime;
+        targetCircleRadius = getTargetRadius() * lerpTime;
         targetCirclePulseRadius *= lerpTime;
       }
 
@@ -286,9 +285,9 @@ public class TapTargetView extends View {
         @Override
         public void onUpdate(float lerpTime) {
           final float pulseLerp = delayedLerp(lerpTime, 0.5f);
-          targetCirclePulseRadius = (1.0f + pulseLerp) * TARGET_RADIUS;
+          targetCirclePulseRadius = (1.0f + pulseLerp) * getTargetRadius();
           targetCirclePulseAlpha = (int) ((1.0f - pulseLerp) * 255);
-          targetCircleRadius = TARGET_RADIUS + halfwayLerp(lerpTime) * TARGET_PULSE_RADIUS;
+          targetCircleRadius = getTargetRadius() + halfwayLerp(lerpTime) * TARGET_PULSE_RADIUS;
 
           if (outerCircleRadius != calculatedOuterCircleRadius) {
             outerCircleRadius = calculatedOuterCircleRadius;
@@ -328,9 +327,9 @@ public class TapTargetView extends View {
           outerCircleAlpha = (int) ((1.0f - spedUpLerp) * target.outerCircleAlpha * 255.0f);
           outerCirclePath.reset();
           outerCirclePath.addCircle(outerCircleCenter[0], outerCircleCenter[1], outerCircleRadius, Path.Direction.CW);
-          targetCircleRadius = (1.0f - lerpTime) * TARGET_RADIUS;
+          targetCircleRadius = (1.0f - lerpTime) * getTargetRadius();
           targetCircleAlpha = (int) ((1.0f - lerpTime) * 255.0f);
-          targetCirclePulseRadius = (1.0f + lerpTime) * TARGET_RADIUS;
+          targetCirclePulseRadius = (1.0f + lerpTime) * getTargetRadius();
           targetCirclePulseAlpha = (int) ((1.0f - lerpTime) * targetCirclePulseAlpha);
           textAlpha = (int) ((1.0f - spedUpLerp) * 255.0f);
           calculateDrawingBounds();
@@ -382,7 +381,6 @@ public class TapTargetView extends View {
 
     TARGET_PADDING = UiUtil.dp(context, 20);
     CIRCLE_PADDING = UiUtil.dp(context, 40);
-    TARGET_RADIUS = UiUtil.dp(context, target.targetRadius);
     TEXT_PADDING = UiUtil.dp(context, 40);
     TEXT_SPACING = UiUtil.dp(context, 8);
     TEXT_MAX_WIDTH = UiUtil.dp(context, 360);
@@ -390,7 +388,7 @@ public class TapTargetView extends View {
     GUTTER_DIM = UiUtil.dp(context, 88);
     SHADOW_DIM = UiUtil.dp(context, 8);
     SHADOW_JITTER_DIM = UiUtil.dp(context, 1);
-    TARGET_PULSE_RADIUS = (int) (0.1f * TARGET_RADIUS);
+    TARGET_PULSE_RADIUS = (int) (0.1f * getTargetRadius());
 
     outerCirclePath = new Path();
     targetBounds = new Rect();
@@ -541,6 +539,14 @@ public class TapTargetView extends View {
         return false;
       }
     });
+  }
+
+  private int getTargetRadius() {
+    // choose this for dinamic target radius
+//    return target.targetRadius;
+
+    // choose this if you want to set the radius
+    return UiUtil.dp(getContext(), target.targetRadius);
   }
 
   private void startExpandAnimation() {
@@ -700,6 +706,16 @@ public class TapTargetView extends View {
     saveCount = c.save();
     {
       c.translate(textBounds.left, textBounds.top);
+      c.translate(outerCircleCenter[0] - getWidth() * 0.5f, 0);
+      int outsideLeft = outerCircleCenter[0] - Double.valueOf(outerCircleRadius * 0.5).intValue();
+      if (outsideLeft < 0 ) {
+        c.translate(Integer.valueOf(-outsideLeft + TEXT_PADDING / 2).floatValue(), 0);
+      }
+
+      int outsideRight = outerCircleCenter[0] + Double.valueOf(outerCircleRadius * 0.5).intValue();
+      if (outsideRight > getWidth()) {
+        c.translate(getWidth() - outsideRight - TEXT_PADDING / 2, 0);
+      }
       titlePaint.setAlpha(textAlpha);
       if (titleLayout != null) {
         titleLayout.draw(c);
@@ -837,10 +853,11 @@ public class TapTargetView extends View {
     // Draw wireframe
     debugPaint.setStyle(Paint.Style.STROKE);
     c.drawRect(textBounds, debugPaint);
+    c.drawRect(getTextBounds(getTotalTextWidth(), getTotalTextHeight()), debugPaint);
     c.drawRect(targetBounds, debugPaint);
     c.drawCircle(outerCircleCenter[0], outerCircleCenter[1], 10, debugPaint);
     c.drawCircle(outerCircleCenter[0], outerCircleCenter[1], calculatedOuterCircleRadius - CIRCLE_PADDING, debugPaint);
-    c.drawCircle(targetBounds.centerX(), targetBounds.centerY(), TARGET_RADIUS + TARGET_PADDING, debugPaint);
+    c.drawCircle(targetBounds.centerX(), targetBounds.centerY(), getTargetRadius() + TARGET_PADDING, debugPaint);
 
     // Draw positions and dimensions
     debugPaint.setStyle(Paint.Style.FILL);
@@ -866,7 +883,6 @@ public class TapTargetView extends View {
     {
       debugPaint.setARGB(220, 0, 0, 0);
       c.translate(0.0f, topBoundary);
-      c.drawRect(0.0f, 0.0f, debugLayout.getWidth(), debugLayout.getHeight(), debugPaint);
       debugPaint.setARGB(255, 255, 0, 0);
       debugLayout.draw(c);
     }
@@ -925,9 +941,9 @@ public class TapTargetView extends View {
   }
 
   void calculateDimensions() {
-    textBounds = getTextBounds();
+    textBounds = getTextBounds(getWidth(), getTotalTextHeight());
     outerCircleCenter = getOuterCircleCenterPoint();
-    calculatedOuterCircleRadius = getOuterCircleRadius(outerCircleCenter[0], outerCircleCenter[1], textBounds, targetBounds);
+    calculatedOuterCircleRadius = Math.min(getOuterCircleRadius(outerCircleCenter[0], outerCircleCenter[1], textBounds, targetBounds),TEXT_MAX_WIDTH);
   }
 
   void calculateDrawingBounds() {
@@ -947,7 +963,7 @@ public class TapTargetView extends View {
   int getOuterCircleRadius(int centerX, int centerY, Rect textBounds, Rect targetBounds) {
     final int targetCenterX = targetBounds.centerX();
     final int targetCenterY = targetBounds.centerY();
-    final int expandedRadius = (int) (1.1f * TARGET_RADIUS);
+    final int expandedRadius = (int) (1.1f * getTargetRadius());
     final Rect expandedBounds = new Rect(targetCenterX, targetCenterY, targetCenterX, targetCenterY);
     expandedBounds.inset(-expandedRadius, -expandedRadius);
 
@@ -956,16 +972,14 @@ public class TapTargetView extends View {
     return Math.max(textRadius, targetRadius) + CIRCLE_PADDING;
   }
 
-  Rect getTextBounds() {
-    final int totalTextHeight = getTotalTextHeight();
-    final int totalTextWidth = getTotalTextWidth();
+  Rect getTextBounds(final int totalTextWidth, final int totalTextHeight) {
 
-    final int possibleTop = targetBounds.centerY() - TARGET_RADIUS - TARGET_PADDING - totalTextHeight;
+    final int possibleTop = targetBounds.centerY() - getTargetRadius() - TARGET_PADDING - totalTextHeight;
     final int top;
     if (possibleTop > topBoundary) {
       top = possibleTop;
     } else {
-      top = targetBounds.centerY() + TARGET_RADIUS + TARGET_PADDING;
+      top = targetBounds.centerY() + getTargetRadius() + TARGET_PADDING;
     }
 
     final int relativeCenterDistance = (getWidth() / 2) - targetBounds.centerX();
@@ -983,15 +997,15 @@ public class TapTargetView extends View {
     final int targetRadius = Math.max(targetBounds.width(), targetBounds.height()) / 2 + TARGET_PADDING;
     final int totalTextHeight = getTotalTextHeight();
 
-    final boolean onTop = targetBounds.centerY() - TARGET_RADIUS - TARGET_PADDING - totalTextHeight > 0;
+    final boolean onTop = targetBounds.centerY() - getTargetRadius() - TARGET_PADDING - totalTextHeight > 0;
 
     final int left = Math.min(textBounds.left, targetBounds.left - targetRadius);
     final int right = Math.max(textBounds.right, targetBounds.right + targetRadius);
     final int titleHeight = titleLayout == null ? 0 : titleLayout.getHeight();
     final int centerY = onTop ?
-        targetBounds.centerY() - TARGET_RADIUS - TARGET_PADDING - totalTextHeight + titleHeight
+        targetBounds.centerY() - getTargetRadius() - TARGET_PADDING - totalTextHeight + titleHeight
         :
-        targetBounds.centerY() + TARGET_RADIUS + TARGET_PADDING + titleHeight;
+        targetBounds.centerY() + getTargetRadius() + TARGET_PADDING + titleHeight;
 
     return new int[] { (left + right) / 2, centerY };
   }
@@ -1009,7 +1023,15 @@ public class TapTargetView extends View {
   }
 
   int getTotalTextWidth() {
-    return getWidth();
+    if (titleLayout == null) {
+      return 0;
+    }
+
+    if (descriptionLayout == null) {
+      return titleLayout.getWidth();
+    }
+
+    return Math.max(titleLayout.getWidth(), descriptionLayout.getWidth());
   }
 
   boolean inGutter(int y) {
