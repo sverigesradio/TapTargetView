@@ -617,7 +617,7 @@ public class TapTargetView extends View {
 
     final Integer targetDimColor = target.dimColorInt(context);
     if (targetDimColor != null) {
-      dimColor = UiUtil.setAlpha(targetDimColor, 0.3f);
+      dimColor = UiUtil.setAlpha(targetDimColor, 0.45f);
     } else {
       dimColor = -1;
     }
